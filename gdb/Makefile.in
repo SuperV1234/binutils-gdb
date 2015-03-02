@@ -2671,6 +2671,8 @@ ALLDEPFILES = \
 	sh-nbsd-tdep.c \
 	sh-tdep.c \
 	sh64-tdep.c \
+	sh-linux-tdep.c \
+	sh-linux-nat.c \
 	sol2-tdep.c \
 	solib-aix.c \
 	solib-spu.c \
