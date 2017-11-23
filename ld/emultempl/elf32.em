@@ -3,6 +3,7 @@
 # This file is now misnamed, because it supports both 32 bit and 64 bit
 # ELF emulations.
 test -z "${ELFSIZE}" && ELFSIZE=32
+test -z "${ETEXT_NAME}" && ETEXT_NAME=${USER_LABEL_PREFIX}etext
 if [ -z "$MACHINE" ]; then
   OUTPUT_ARCH=${ARCH}
 else
@@ -1284,6 +1285,39 @@ gld${EMULATION_NAME}_after_open (void)
       return;
     }
 
+  if (link_info.builtin_linker_script)
+    {
+      struct bfd_link_hash_entry *h;
+      const char *symbols[] =
+	{
+	  "__${ETEXT_NAME}",
+	  "_${ETEXT_NAME}",
+	  "${ETEXT_NAME}",
+	  "${USER_LABEL_PREFIX}" "__bss_start",
+	  "${USER_LABEL_PREFIX}" "_edata",
+	  "${USER_LABEL_PREFIX}" "edata",
+	  "${USER_LABEL_PREFIX}" "_end",
+	  "${USER_LABEL_PREFIX}" "end",
+	  NULL
+	};
+      const char **p;
+
+      /* These symbols are defined by builtin linker scripts.  Set
+	 ldscript_def if they are referenced.  */
+      for (p = symbols; *p != NULL; p++)
+	{
+	  h = bfd_link_hash_lookup (link_info.hash, *p, FALSE, FALSE,
+				    FALSE);
+	  if (h != NULL
+	      && (h->type == bfd_link_hash_new
+		  || h->type == bfd_link_hash_undefined
+		  || h->type == bfd_link_hash_undefweak
+		  || h->type == bfd_link_hash_common))
+	    h->ldscript_def = 1;
+	}
+    }
+
+
   if (!link_info.traditional_format)
     {
       bfd *elfbfd = NULL;
@@ -2350,6 +2384,8 @@ sc="-f stringify.sed"
 fragment <<EOF
 {
   *isfile = 0;
+
+  link_info.builtin_linker_script = TRUE;
 
   if (bfd_link_relocatable (&link_info) && config.build_constructors)
     return

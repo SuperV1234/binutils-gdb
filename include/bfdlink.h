@@ -492,6 +492,9 @@ struct bfd_link_info
   /* TRUE if common symbols should be treated as undefined.  */
   unsigned int inhibit_common_definition : 1;
 
+  /* TRUE if builtin linker script is used.  */
+  unsigned int builtin_linker_script : 1;
+
   /* The 1-byte NOP for x86 call instruction.  */
   char call_nop_byte;
 
